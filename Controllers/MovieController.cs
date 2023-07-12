@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
+using MoviesApi.Data;
 using MoviesApi.Models;
 
 namespace MoviesApi.Controllers;
@@ -8,28 +8,33 @@ namespace MoviesApi.Controllers;
 [Route("[controller]")]
 public class MovieController : ControllerBase
 {
-    private static List<Movie> movies = new List<Movie>();
-    private static int id = 0;
+
+    private MovieContext _context;
+
+    public MovieController(MovieContext context)
+    {
+        _context = context;
+    }
 
     [HttpPost]
     public IActionResult AddMovie([FromBody] Movie movie)
     {
-        movie.Id = id++;
-        movies.Add(movie);
+        _context.Movies.Add(movie);
+        _context.SaveChanges();
         return CreatedAtAction(nameof(GetMovieById), 
             new { id = movie.Id}, movie);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet]
     public IEnumerable<Movie> GetMovies([FromQuery] int skip = 0, [FromQuery] int take = 50)
     {
-        return movies.Skip(skip).Take(take);
+        return _context.Movies.Skip(skip).Take(take);
     }
 
-    [HttpGet]
-    public IActionResult? GetMovieById(int id) 
+    [HttpGet("{id}")]
+    public IActionResult GetMovieById(int id) 
     {
-        var movie = movies.FirstOrDefault(movie => movie.Id == id);
+        var movie = _context.Movies.FirstOrDefault(movie => movie.Id == id);
         if (movie is null) return NotFound();
         return Ok(movie);
     }
