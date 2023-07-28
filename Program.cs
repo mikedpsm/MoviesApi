@@ -18,7 +18,7 @@ builder.Services.AddSwaggerGen(s =>
     s.IncludeXmlComments(xmlPath); 
 });
 builder.Services.AddDbContext<MovieContext>(
-    options => options.UseMySql(
+    options => options.UseLazyLoadingProxies().UseMySql(
         connectionString, ServerVersion.AutoDetect(connectionString)));
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
