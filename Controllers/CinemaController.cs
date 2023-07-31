@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MoviesApi.Data;
 using MoviesApi.Data.DTOs;
 using MoviesApi.Models;
@@ -29,10 +30,17 @@ public class CinemaController : ControllerBase
     }
 
     [HttpGet]
-    public IEnumerable<ReadCinemaDto> GetCinemas()
+    public IEnumerable<ReadCinemaDto> GetCinemas([FromBody] int? addressId = null)
     {
-        var cinemaList = _mapper.Map<List<ReadCinemaDto>>(_context.Cinemas.ToList());
-        return cinemaList;
+        if (addressId == null)
+        {
+            return _mapper.Map<List<ReadCinemaDto>>(_context.Cinemas.ToList());
+        }
+        return _mapper.Map<List<ReadCinemaDto>>(
+            _context.Cinemas.FromSqlRaw(
+                $"SELECT Id, Name, AddressId " +
+                $"FROM cinemas " +
+                $"WHERE Cinemas.AddressId = {addressId}").ToList());
     }
 
     [HttpGet("{id}")]

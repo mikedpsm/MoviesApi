@@ -44,10 +44,22 @@ public class MovieController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public IEnumerable<ReadMovieDto> GetMovies([FromQuery] int skip = 0, [FromQuery] int take = 50)
+    public IEnumerable<ReadMovieDto> GetMovies(
+        [FromQuery] int skip = 0, 
+        [FromQuery] int take = 50,
+        [FromQuery] string? nameCinema = null)
     {
+        if (nameCinema is null)
+        {
         return _mapper.Map<List<ReadMovieDto>>(
             _context.Movies.Skip(skip).Take(take).ToList());
+        }
+        return _mapper.Map<List<ReadMovieDto>>(_context.Movies
+            .Skip(skip)
+            .Take(take)
+            .Where(movie => movie.Sessions
+            .Any(session => session.Cinema.Name == nameCinema))
+            .ToList());
     }
 
     [HttpGet("{id}")]
